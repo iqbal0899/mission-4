@@ -1,0 +1,96 @@
+let tasks = JSON.parse(localStorage.getItem('todo-tasks') || '[]');
+  let filter = 'all';
+ 
+  function save() {
+    localStorage.setItem('todo-tasks', JSON.stringify(tasks));
+  }
+ 
+  function fmtDate(ts) {
+    const d = new Date(ts);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+ 
+  function render() {
+    const list = document.getElementById('task-list');
+    const filtered = tasks.filter(t => {
+      if (filter === 'active') return !t.done;
+      if (filter === 'done') return t.done;
+      return true;
+    });
+ 
+    const total = tasks.length;
+    const done = tasks.filter(t => t.done).length;
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-done').textContent = done;
+    document.getElementById('stat-left').textContent = total - done;
+    document.getElementById('clear-row').style.display = done > 0 ? 'flex' : 'none';
+ 
+    if (filtered.length === 0) {
+      const msgs = {
+        all: { icon: '📋', h: 'No tasks yet', p: 'Add your first task above.' },
+        active: { icon: '✅', h: 'All caught up!', p: 'No active tasks remaining.' },
+        done: { icon: '🎯', h: 'Nothing completed yet', p: 'Check off a task to see it here.' }
+      };
+      const m = msgs[filter];
+      list.innerHTML = `<div class="empty"><div class="icon">${m.icon}</div><h3>${m.h}</h3><p>${m.p}</p></div>`;
+      return;
+    }
+ 
+    list.innerHTML = filtered.map(t => `
+      <div class="task-item ${t.done ? 'done' : ''}" id="task-${t.id}">
+        <input type="checkbox" class="task-check" ${t.done ? 'checked' : ''} onchange="toggle('${t.id}')" aria-label="Mark done" />
+        <div class="task-body">
+          <div class="task-text">${escHtml(t.text)}</div>
+          <div class="task-meta">${fmtDate(t.created)}</div>
+        </div>
+        <div class="task-actions">
+          <button class="btn-icon del" onclick="remove('${t.id}')" aria-label="Delete task" title="Delete">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+ 
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+ 
+  function addTask() {
+    const input = document.getElementById('task-input');
+    const text = input.value.trim();
+    if (!text) { input.focus(); return; }
+    tasks.unshift({ id: Date.now().toString(36) + Math.random().toString(36).slice(2), text, done: false, created: Date.now() });
+    save();
+    render();
+    input.value = '';
+    input.focus();
+  }
+ 
+  function toggle(id) {
+    const t = tasks.find(t => t.id === id);
+    if (t) { t.done = !t.done; save(); render(); }
+  }
+ 
+  function remove(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    save();
+    render();
+  }
+ 
+  function clearDone() {
+    tasks = tasks.filter(t => !t.done);
+    save();
+    render();
+  }
+ 
+  function setFilter(f, btn) {
+    filter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+ 
+  document.getElementById('task-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTask();
+  });
+ 
+  render();
