@@ -1,5 +1,7 @@
 let tasks = JSON.parse(localStorage.getItem('todo-tasks') || '[]');
   let filter = 'all';
+  let priorityFilter = 'all';
+  const priorityRank = { high: 0, medium: 1, low: 2 };
  
   function save() {
     localStorage.setItem('todo-tasks', JSON.stringify(tasks));
@@ -7,15 +9,21 @@ let tasks = JSON.parse(localStorage.getItem('todo-tasks') || '[]');
  
   function fmtDate(ts) {
     const d = new Date(ts);
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
  
   function render() {
     const list = document.getElementById('task-list');
-    const filtered = tasks.filter(t => {
-      if (filter === 'active') return !t.done;
-      if (filter === 'done') return t.done;
+    let filtered = tasks.filter(t => {
+      if (filter === 'active' && t.done) return false;
+      if (filter === 'done' && !t.done) return false;
+      if (priorityFilter !== 'all' && t.priority !== priorityFilter) return false;
       return true;
+    });
+ 
+    filtered = filtered.slice().sort((a, b) => {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      return priorityRank[a.priority] - priorityRank[b.priority];
     });
  
     const total = tasks.length;
@@ -40,11 +48,14 @@ let tasks = JSON.parse(localStorage.getItem('todo-tasks') || '[]');
       <div class="task-item ${t.done ? 'done' : ''}" id="task-${t.id}">
         <input type="checkbox" class="task-check" ${t.done ? 'checked' : ''} onchange="toggle('${t.id}')" aria-label="Mark done" />
         <div class="task-body">
-          <div class="task-text">${escHtml(t.text)}</div>
+          <div class="task-text-row">
+            <div class="task-text">${escHtml(t.text)}</div>
+            <span class="priority-badge ${t.priority}">${t.priority}</span>
+          </div>
           <div class="task-meta">${fmtDate(t.created)}</div>
         </div>
         <div class="task-actions">
-          <button class="btn-icon del" onclick="remove('${t.id}')" aria-label="Delete task" title="Delete">✕</button>
+          <button class="btn-icon del" onclick="remove('${t.id}')" aria-label="Delete task" title="Delete">Delete</button>
         </div>
       </div>
     `).join('');
@@ -56,9 +67,16 @@ let tasks = JSON.parse(localStorage.getItem('todo-tasks') || '[]');
  
   function addTask() {
     const input = document.getElementById('task-input');
+    const priorityInput = document.getElementById('priority-input');
     const text = input.value.trim();
     if (!text) { input.focus(); return; }
-    tasks.unshift({ id: Date.now().toString(36) + Math.random().toString(36).slice(2), text, done: false, created: Date.now() });
+    tasks.unshift({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+      text,
+      done: false,
+      created: Date.now(),
+      priority: priorityInput.value
+    });
     save();
     render();
     input.value = '';
@@ -84,7 +102,7 @@ let tasks = JSON.parse(localStorage.getItem('todo-tasks') || '[]');
  
   function setFilter(f, btn) {
     filter = f;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filters:not(.priority-filters) .filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     render();
   }
