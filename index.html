@@ -6,16 +6,33 @@
 <title>To-Do List</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="./css/style.css">
-</head>
- 
+<link rel="stylesheet" href="./css/style.css" />
+
 <body>
+
+<header class="app-header">
+  <div class="app-header__inner">
+    <div>
+      <h1 class="app-header__title">Todo List</h1>
+    </div>
+    <div class="clock">
+      <div class="clock__time" id="clock-time">--:--<span class="ampm"></span></div>
+      <div class="clock__date" id="clock-date">-- --- ----</div>
+      <div class="clock__weekday" id="clock-weekday">--------</div>
+    </div>
+  </div>
+</header>
  
 <div class="app">
-  <header>
-    <h1>To Do List</h1>
-    <p>Stay focused and complete every task with a smile.</p>
-  </header>
+ 
+  <section class="profile-card">
+    <h2 class="visually-hidden">Employee profile</h2>
+    <div class="profile-card__avatar" aria-hidden="true"></div>
+    <div>
+      <p class="profile-card__name">Muhammad Iqbal</p>
+      <p class="profile-card__role">FullStack Developer</p>
+    </div>
+  </section>
  
   <div class="stats">
     <div class="stat"><strong id="stat-total">0</strong> total</div>
@@ -24,7 +41,7 @@
   </div>
  
   <div class="input-row">
-    <input type="text" id="task-input" placeholder="Add a new task…" maxlength="200">
+    <textarea id="task-input" placeholder="Add a new task…" maxlength="200" rows="1"></textarea>
     <select id="priority-input" aria-label="Priority">
       <option value="low">Low</option>
       <option value="medium" selected>Medium</option>
@@ -34,9 +51,16 @@
   </div>
  
   <div class="filters">
-    <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
+    <button class="filter-btn active" data-filter="all"    onclick="setFilter('all', this)">All</button>
     <button class="filter-btn" data-filter="active" onclick="setFilter('active', this)">Active</button>
-    <button class="filter-btn" data-filter="done" onclick="setFilter('done', this)">Completed</button>
+    <button class="filter-btn" data-filter="done"   onclick="setFilter('done', this)">Completed</button>
+  </div>
+ 
+  <div class="filters priority-filters">
+    <button class="filter-btn active" data-priority="all"    onclick="setPriorityFilter('all', this)">All priorities</button>
+    <button class="filter-btn" data-priority="high"   onclick="setPriorityFilter('high', this)">High</button>
+    <button class="filter-btn" data-priority="medium" onclick="setPriorityFilter('medium', this)">Medium</button>
+    <button class="filter-btn" data-priority="low"    onclick="setPriorityFilter('low', this)">Low</button>
   </div>
  
   <div class="task-list" id="task-list"></div>
@@ -44,11 +68,13 @@
   <div class="clear-row" id="clear-row" style="display:none">
     <button class="btn-clear" onclick="clearDone()">Clear completed</button>
   </div>
+ 
 </div>
+ 
+<footer class="footer">
+  <p>© 2026 My Tasks. Stay focused and work with joy.</p>
+  <p>Developed by <strong>Muhammad Iqbal</strong></p>
+</footer>
 <script src="./js/app.js"></script>
 </body>
-<footer class="footer">
-    <p>© 2026 My Tasks. Stay focused and work with joy.</p>
-    <p>Developed by <strong>Muhammad Iqbal</strong></p>
-</footer>
 </html>
